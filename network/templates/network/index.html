@@ -1,0 +1,56 @@
+{% extends "network/layout.html" %}
+{% load static %}
+
+
+{% block body %}
+{% if user.is_authenticated %}
+<form id="newpostform" action="{% url 'index' %}" method="post">
+    {% csrf_token %}
+    {{ new_post }}
+    <input class="btn btn-primary sub" type="submit" value="Submit">
+</form>
+{% endif %}
+
+<div id="feed">
+    <h1>News-feed</h1>
+{% for post in page_obj %}
+<div id="post" data-post-id="{{ post.id }}">
+    <h5><a href="{% url 'profile' username=post.user %}">{{ post.user }}</a></h5>
+    <div id="body">{{ post.content }}</div>
+    <div id="likes">Likes: {{ post.likes.count }}</div>
+    <div id="time">{{ post.timestamp }}</div>
+    {% if post.user == request.user %}
+        <button id="edit">Edit Post</button>
+    {% endif %}
+
+    {% if request.user in post.likes.all %}
+        <button id="like" data-post-id="{{ post.id }}" class="btn btn-danger">Unlike</button>
+    {% else %}
+        <button id="like" data-post-id="{{ post.id }}" class="btn btn-success">Like</button>
+    {% endif %}
+</div>
+{% endfor %}
+
+    <div class="pagination">
+        <ul class="step-links pagination">
+            {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page=1">&laquo; first</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">previous</a></li>
+            {% endif %}
+
+            <span class="current">
+                <li class="page-item page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.</li>
+            </span>
+
+            {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">next</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a></li>
+            {% endif %}
+        </ul>
+    </div>
+
+</div>
+
+<script type="text/javascript" src="{% static 'network/script.js' %}"></script>
+
+{% endblock %}
